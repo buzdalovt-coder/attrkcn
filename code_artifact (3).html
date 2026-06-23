@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АТТРАКЦИОН</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap');
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        .grain-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.05; pointer-events: none; z-index: 50; background-image: url('https://www.transparenttextures.com/patterns/stardust.png'); }
+        .slider-img { display: none; width: 100%; height: 100%; object-fit: cover; }
+        .slider-img.active { display: block; }
+    </style>
+</head>
+<body class="selection:bg-white selection:text-black">
+    <div class="grain-overlay"></div>
+
+    <nav class="fixed w-full z-40 p-8 flex justify-between items-center mix-blend-difference">
+        <div class="text-xl tracking-[0.2em] font-light cursor-pointer" onclick="location.reload()">АТТРАКЦИОН</div>
+        <ul class="flex gap-8 text-xs uppercase tracking-[0.1em]">
+            <li><a href="#" class="hover:opacity-50 transition" onclick="closeAll()">Коллекция</a></li>
+            <li><a href="#" class="hover:opacity-50 transition" onclick="openContacts()">Контакт</a></li>
+            <li><a href="#" class="hover:opacity-50 transition" onclick="openCart()">Корзина (<span id="cart-count">0</span>)</a></li>
+        </ul>
+    </nav>
+
+    <main id="catalog" class="min-h-screen flex flex-col justify-center items-center p-8 pt-32 transition-opacity duration-300">
+        <section class="max-w-4xl mx-auto w-full">
+            <div class="grid grid-cols-2 gap-8" id="product-grid">
+                <!-- 5 позиций -->
+                <div class="cursor-pointer group relative aspect-[3/4] overflow-hidden bg-neutral-900" onclick="openProduct('Позиция 01', 5000, 'Описание 01', ['image1.jpg', 'image2.jpg'])">
+                    <img src="image1.jpg" class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all" onerror="this.src='https://placehold.co/400x500/111/fff?text=Photo'">
+                </div>
+                <div class="cursor-pointer group relative aspect-[3/4] overflow-hidden bg-neutral-900" onclick="openProduct('Позиция 02', 4500, 'Описание 02', ['image2.jpg', 'image3.jpg'])">
+                    <img src="image2.jpg" class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all" onerror="this.src='https://placehold.co/400x500/111/fff?text=Photo'">
+                </div>
+                <div class="cursor-pointer group relative aspect-[3/4] overflow-hidden bg-neutral-900" onclick="openProduct('Позиция 03', 3000, 'Описание 03', ['image3.jpg', 'image4.jpg'])">
+                    <img src="image3.jpg" class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all" onerror="this.src='https://placehold.co/400x500/111/fff?text=Photo'">
+                </div>
+                <div class="cursor-pointer group relative aspect-[3/4] overflow-hidden bg-neutral-900" onclick="openProduct('Позиция 04', 6000, 'Описание 04', ['image4.jpg', 'image5.jpg'])">
+                    <img src="image4.jpg" class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all" onerror="this.src='https://placehold.co/400x500/111/fff?text=Photo'">
+                </div>
+                <div class="cursor-pointer group relative aspect-[3/4] overflow-hidden bg-neutral-900 col-span-2 md:col-span-1" onclick="openProduct('Позиция 05', 7000, 'Описание 05', ['image5.jpg', 'image1.jpg'])">
+                    <img src="image5.jpg" class="object-cover w-full h-full grayscale hover:grayscale-0 transition-all" onerror="this.src='https://placehold.co/400x500/111/fff?text=Photo'">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="product-view" class="fixed inset-0 bg-[#050505] z-50 hidden flex flex-col justify-center items-center p-8">
+        <button onclick="closeProduct()" class="absolute top-8 right-8 text-xs uppercase">Закрыть</button>
+        <div class="max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="relative aspect-[3/4] bg-neutral-900 overflow-hidden">
+                <div id="slider-container" class="w-full h-full"></div>
+                <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/20 transition">&lt;</button>
+                <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/20 transition">&gt;</button>
+            </div>
+            <div>
+                <h2 id="p-title" class="text-3xl"></h2>
+                <p id="p-price" class="my-4"></p>
+                <p id="p-desc" class="mb-6 opacity-60"></p>
+                <button onclick="addToCart()" class="border px-8 py-2 text-xs uppercase hover:bg-white hover:text-black transition">Добавить в корзину</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-view" class="fixed inset-0 bg-[#050505] z-50 hidden p-8 overflow-y-auto">
+        <button onclick="closeCart()" class="absolute top-8 right-8 text-xs uppercase">Закрыть</button>
+        <div class="max-w-md mt-16" id="cart-items"></div>
+        <div class="mt-8 border-t pt-4">
+            <p id="cart-total" class="text-xl"></p>
+            <p class="text-xs opacity-50 mt-2 italic">Доставка: 1000 ₽ (оплачивается отдельно)</p>
+            <div class="mt-8">
+                <p class="text-sm uppercase tracking-widest opacity-80">Для заказа писать в Telegram: @ATTRKCN</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="contact-view" class="fixed inset-0 bg-[#050505] z-50 hidden flex items-center justify-center">
+        <button onclick="closeContacts()" class="absolute top-8 right-8 text-xs uppercase">Закрыть</button>
+        <div class="text-center space-y-4">
+            <div>ATTRKCN.RU</div>
+            <div>TELEGRAM: @ATTRKCN</div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        let activeProduct = null;
+        let currentImages = [];
+        let currentIndex = 0;
+
+        function openProduct(name, price, desc, images) {
+            activeProduct = { name, price };
+            currentImages = images;
+            currentIndex = 0;
+            
+            document.getElementById('p-title').innerText = name;
+            document.getElementById('p-price').innerText = price + ' ₽';
+            document.getElementById('p-desc').innerText = desc;
+            
+            const container = document.getElementById('slider-container');
+            container.innerHTML = images.map((src, i) => `<img src="${src}" class="slider-img ${i === 0 ? 'active' : ''}" onerror="this.src='https://placehold.co/400x500/111/fff?text=Photo'">`).join('');
+            
+            document.getElementById('product-view').classList.remove('hidden');
+        }
+
+        function updateSlider() {
+            const imgs = document.querySelectorAll('.slider-img');
+            imgs.forEach((img, i) => img.classList.toggle('active', i === currentIndex));
+        }
+
+        function nextSlide() { currentIndex = (currentIndex + 1) % currentImages.length; updateSlider(); }
+        function prevSlide() { currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length; updateSlider(); }
+
+        function addToCart() {
+            cart.push(activeProduct);
+            document.getElementById('cart-count').innerText = cart.length;
+            closeProduct();
+        }
+
+        function openCart() {
+            const list = document.getElementById('cart-items');
+            list.innerHTML = cart.map(item => `<div class="mb-2">${item.name} — ${item.price} ₽</div>`).join('');
+            document.getElementById('cart-total').innerText = 'Итого: ' + cart.reduce((sum, item) => sum + item.price, 0) + ' ₽';
+            document.getElementById('cart-view').classList.remove('hidden');
+        }
+
+        function closeProduct() { document.getElementById('product-view').classList.add('hidden'); }
+        function closeCart() { document.getElementById('cart-view').classList.add('hidden'); }
+        function openContacts() { document.getElementById('contact-view').classList.remove('hidden'); }
+        function closeContacts() { document.getElementById('contact-view').classList.add('hidden'); }
+        function closeAll() { closeProduct(); closeCart(); closeContacts(); }
+    </script>
+</body>
+</html>
